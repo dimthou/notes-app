@@ -1,0 +1,52 @@
+
+volumes:
+  notes-sql-data:
+
+services:
+  notes-sql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    platform: linux/amd64
+    container_name: notes-sql
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=New_Password123
+    ports:
+      - "1433:1433"
+    networks:
+      - notesapp-net
+    volumes:
+      - notes-sql-data:/var/opt/mssql
+
+  notesapp-api:
+    build:
+      context: ./NotesApp.Api
+      dockerfile: Dockerfile
+    container_name: notesapp-api
+    ports:
+      - "5247:5247"
+    environment:
+      - ASPNETCORE_URLS=http://+:5247
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=notes-sql,1433;Database=NotesDb;User Id=sa;Password=New_Password123;TrustServerCertificate=True
+    depends_on:
+      - notes-sql
+    networks:
+      - notesapp-net
+
+  notesapp-web:
+    build:
+      context: ./NotesApp.Web
+      dockerfile: Dockerfile
+    container_name: notesapp-web
+    ports:
+      - "5173:80"
+    environment:
+      - VITE_API_URL=http://localhost:5247/api
+    depends_on:
+      - notesapp-api
+    networks:
+      - notesapp-net
+
+networks:
+  notesapp-net:
+    driver: bridge
