@@ -49,6 +49,24 @@ namespace NotesApp.Api.Controllers
             var token = GenerateJwtToken((int)user.Id, (string)user.Username);
             return Ok(new { token });
         }
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] AuthResetPasswordDto dto)
+        {
+            using var conn = _context.CreateConnection();
+            var sql = "SELECT * FROM Users WHERE Email = @Email";
+            var user = await conn.QuerySingleOrDefaultAsync<dynamic>(sql, new { dto.Email });
+
+            if (user == null)
+                return NotFound("User with given email not found");
+            if (!BCrypt.Net.BCrypt.Verify(dto.OldPassword, (string)user.PasswordHash))
+                return Unauthorized("Old password is incorrect");
+
+            var newHashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            var updateSql = "UPDATE Users SET PasswordHash = @PasswordHash WHERE Email = @Email";
+            await conn.ExecuteAsync(updateSql, new { PasswordHash = newHashedPassword, dto.Email });
+
+            return Ok("Password reset successfully");
+        }
 
         private string GenerateJwtToken(int userId, string username)
         {
