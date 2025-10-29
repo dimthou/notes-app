@@ -27,6 +27,8 @@ jobs:
           push: true
           tags: dimthou/notesapp-api:latest
           platforms: linux/amd64
+          provenance: false
+          sbom: false
 
       - name: Build and push Web
         uses: docker/build-push-action@v4
@@ -36,3 +38,5 @@ jobs:
           push: true
           tags: dimthou/notesapp-web:latest
           platforms: linux/amd64
+          provenance: false
+          sbom: false
