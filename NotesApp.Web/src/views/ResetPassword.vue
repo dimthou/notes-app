@@ -6,12 +6,20 @@ import { useRouter } from "vue-router";
 const store = useAuthStore();
 const router = useRouter();
 
-const username = ref("");
-const password = ref("");
+const email = ref("");
+const oldPassword = ref("");
+const newPassword = ref("");
+const verifyPassword = ref("");
 
-async function handleLogin() {
-  await store.login(username.value, password.value);
-  if (store.token) router.push("/notes");
+async function handleResetPassword() {
+  if (newPassword.value !== verifyPassword.value) {
+    alert("New Password and Verify Password do not match");
+    return;
+  }
+  await store.resetPassword(email.value, oldPassword.value, newPassword.value);
+  if (!store.error) {
+    router.push("/login");
+  }
 }
 </script>
 
@@ -20,48 +28,66 @@ async function handleLogin() {
     <div class="max-w-md w-full space-y-8">
       <div>
         <svg class="mx-auto h-12 w-auto text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
         </svg>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Create your account</h2>
         <p class="mt-2 text-center text-sm text-gray-600">
           Or
-          <router-link to="/register" class="font-medium text-blue-600 hover:text-blue-500">
-            create a new account
-          </router-link>
-        </p>
-        <p class="mt-2 text-center text-sm text-gray-600">
-          Or
-          <router-link to="/reset-password" class="font-medium text-blue-600 hover:text-blue-500">
-            forgot your password
+          <router-link to="/login" class="font-medium text-blue-600 hover:text-blue-500">
+            sign in to your account
           </router-link>
         </p>
       </div>
 
-      <form @submit.prevent="handleLogin" class="mt-8 space-y-6">
+      <form @submit.prevent="handleResetPassword" class="mt-8 space-y-6">
         <div class="rounded-md shadow-sm -space-y-px">
           <div>
-            <label for="username" class="sr-only">Username</label>
+            <label for="email" class="sr-only">Email address</label>
             <input
-              id="username"
-              v-model="username"
-              name="username"
-              type="text"
+              id="email"
+              v-model="email"
+              name="email"
+              type="email"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-              placeholder="Username"
+              placeholder="Email address"
             />
           </div>
           <div>
-            <label for="password" class="sr-only">Password</label>
+            <label for="oldPassword" class="sr-only">Old Password1</label>
             <input
-              id="password"
-              v-model="password"
-              name="password"
+              id="oldPassword"
+              v-model="oldPassword"
+              name="oldPassword"
+              type="password"
+              required
+              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+              placeholder="Old Password"
+            />
+          </div>
+          <div>
+            <label for="newPassword" class="sr-only">New Password</label>
+            <input
+              id="newPassword"
+              v-model="newPassword"
+              name="newPassword"
+              type="password"
+              required
+              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+              placeholder="New Password"
+            />
+          </div>
+          <div>
+            <label for="verifyPassword" class="sr-only">Verify Password</label>
+            <input
+              id="verifyPassword"
+              v-model="verifyPassword"
+              name="verifyPassword"
               type="password"
               required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-              placeholder="Password"
+              placeholder="VerifyPassword"
             />
           </div>
         </div>
@@ -87,10 +113,11 @@ async function handleLogin() {
           >
             <span class="absolute left-0 inset-y-0 flex items-center pl-3">
               <svg class="h-5 w-5 text-blue-500 group-hover:text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6z" />
+                <path d="M16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
               </svg>
             </span>
-            {{ store.loading ? 'Signing in...' : 'Sign in' }}
+            {{ store.loading ? 'Reseting password...' : 'Reset Password' }}
           </button>
         </div>
       </form>

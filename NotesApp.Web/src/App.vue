@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, provide } from 'vue';
+import { ref, provide, onMounted } from 'vue';
 import Navigation from './components/navigation/Navigation.vue';
 import MobileSidebar from './components/navigation/MobileSidebar.vue';
+import { useAuthStore } from './store/auth';
 
 const sidebarOpen = ref(false);
 
@@ -11,6 +12,14 @@ provide('sidebarOpen', sidebarOpen);
 function toggleSidebar() {
   sidebarOpen.value = !sidebarOpen.value;
 }
+
+const auth = useAuthStore();
+
+onMounted(() => {
+  if (auth.token && !auth.user) {
+    auth.fetchUserInfo();
+  }
+});
 </script>
 
 <template>

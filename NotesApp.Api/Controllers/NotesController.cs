@@ -22,6 +22,13 @@ namespace NotesApp.Api.Controllers
                 throw new UnauthorizedAccessException("User ID claim missing");
             return int.Parse(userId);
         }
+        // GET /api/notes with category filter
+        [HttpGet("filter/{categoryId}")]
+        public async Task<IActionResult> GetAllFiltered(int categoryId){
+            var userId = GetUserId();
+            var notes = await _repo.GetAllFilteredAsync(userId, categoryId);
+            return Ok(notes);
+        }
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {

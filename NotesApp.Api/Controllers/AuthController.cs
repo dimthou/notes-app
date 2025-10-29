@@ -6,6 +6,7 @@ using System.Text;
 using NotesApp.Api.Data;
 using Dapper;
 using NotesApp.Api.DTOs;
+using Microsoft.AspNetCore.Authorization;
 
 namespace NotesApp.Api.Controllers
 {
@@ -20,6 +21,21 @@ namespace NotesApp.Api.Controllers
         {
             _config = config;
             _context = context;
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public async Task<ActionResult<UserDto>> GetCurrentUser()
+        {
+            var userId = GetUserId();
+            using var conn = _context.CreateConnection();
+            const string sql = "SELECT Id, Username, Email FROM Users WHERE Id = @UserId";
+            var user = await conn.QueryFirstOrDefaultAsync<UserDto>(sql, new { UserId = userId });
+
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
         }
 
         [HttpPost("register")]
@@ -89,6 +105,13 @@ namespace NotesApp.Api.Controllers
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+        private int GetUserId()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+                throw new UnauthorizedAccessException("User ID claim missing");
+            return int.Parse(userId);
         }
     }
 }

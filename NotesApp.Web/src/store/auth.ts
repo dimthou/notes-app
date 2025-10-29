@@ -15,6 +15,15 @@ export const useAuthStore = defineStore("auth", {
     error: null as string | null
   }),
   actions: {
+    async fetchUserInfo() {
+      try {
+        const res = await api.get("/auth/me");
+        this.user = res.data;
+      } catch (err: any) {
+        this.error = err.response?.data?.message || "Failed to fetch user info";
+        this.logout();
+      }
+    },
     async login(username: string, password: string) {
       this.loading = true;
       try {
@@ -22,7 +31,8 @@ export const useAuthStore = defineStore("auth", {
         this.token = res.data.token;
         localStorage.setItem("token", this.token!);
         api.defaults.headers.common["Authorization"] = `Bearer ${this.token}`;
-        this.user = res.data.user;
+        // this.user = res.data.user;
+        await this.fetchUserInfo(); // Fetch user info after successful login
         this.error = null;
       } catch (err: any) {
         this.error = err.response?.data?.message || "Login failed";
@@ -34,13 +44,29 @@ export const useAuthStore = defineStore("auth", {
       this.loading = true;
       try {
         const res = await api.post("/auth/register", { username, email, password });
-        this.token = res.data.token;
-        localStorage.setItem("token", this.token!);
-        api.defaults.headers.common["Authorization"] = `Bearer ${this.token}`;
-        this.user = res.data.user;
+        // this.token = res.data.token;
+        // localStorage.setItem("token", this.token!);
+        // api.defaults.headers.common["Authorization"] = `Bearer ${this.token}`;
+        // this.user = res.data.user;
+        // this.error = null;
+        this.user = null;
+        this.token = null;
         this.error = null;
       } catch (err: any) {
         this.error = err.response?.data?.message || "Registration failed";
+      } finally {
+        this.loading = false;
+      }
+    },
+    async resetPassword(email: string, oldPassword: string, newPassword: string) {
+      this.loading = true;
+      try {
+        const res = await api.post("/auth/reset-password", { email, oldPassword, newPassword });
+        this.user = null;
+        this.token = null;
+        this.error = null;
+      } catch (err: any) {
+        this.error = err.response?.data?.message || "Reset failed";
       } finally {
         this.loading = false;
       }

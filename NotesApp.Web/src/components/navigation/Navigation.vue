@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/store/auth';
 import NavLink from './NavLink.vue';
+import { computed } from 'vue';
 
 const auth = useAuthStore();
+
+const greeting = computed(() => auth.user ? `Hello, ${auth.user.username}` : '');
 
 const navigationLinks = {
   unauthenticated: [
@@ -37,6 +40,10 @@ const navigationLinks = {
       />
     </template>
     <template v-else>
+      <!-- Add greeting -->
+      <div class="px-2 py-2 mb-4 text-sm font-medium text-gray-600">
+        {{ greeting }}
+      </div>
       <NavLink
         v-for="link in navigationLinks.authenticated"
         :key="link.to"

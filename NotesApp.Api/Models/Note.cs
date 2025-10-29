@@ -8,10 +8,11 @@ namespace NotesApp.Api.Models
         public int Id { get; set; }
 
         public int UserId { get; set; }   // FK to Users
+        public int CategoryId { get; set;}
 
         [Required(ErrorMessage = "Title is required")]
         [MinLength(1, ErrorMessage = "Title cannot be empty")]
-        public required string Title { get; set; }
+        public required string Title { get; set; } = string.Empty;
 
         public string? Content { get; set; }
 

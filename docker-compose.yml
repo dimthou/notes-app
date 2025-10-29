@@ -9,7 +9,7 @@ services:
     container_name: notes-sql
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=New_Password123
+      - SA_PASSWORD=${SA_PASSWORD}
     ports:
       - "1433:1433"
     networks:
@@ -21,13 +21,14 @@ services:
     build:
       context: ./NotesApp.Api
       dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/notesapp-api:latest
     container_name: notesapp-api
     ports:
       - "5247:5247"
     environment:
       - ASPNETCORE_URLS=http://+:5247
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Server=notes-sql,1433;Database=NotesDb;User Id=sa;Password=New_Password123;TrustServerCertificate=True
+      - ConnectionStrings__DefaultConnection=Server=notes-sql,1433;Database=NotesDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True
     depends_on:
       - notes-sql
     networks:
@@ -37,11 +38,12 @@ services:
     build:
       context: ./NotesApp.Web
       dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/notesapp-web:latest
     container_name: notesapp-web
     ports:
       - "5173:80"
     environment:
-      - VITE_API_URL=http://localhost:5247/api
+      - VITE_API_URL=${VITE_API_URL}
     depends_on:
       - notesapp-api
     networks:

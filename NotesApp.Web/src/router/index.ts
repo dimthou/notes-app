@@ -6,6 +6,7 @@ import NoteList from "@/views/NoteList.vue";
 import NoteDetail from "@/views/NoteDetail.vue";
 import LoginView from "@/views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
+import ResetPassword from "@/views/ResetPassword.vue";
 
 const routes = [
   { path: "/", redirect: "/notes" },
@@ -13,7 +14,8 @@ const routes = [
   { path: "/notes/new", component: NoteDetail },
   { path: "/notes/:id", component: NoteDetail },
   { path: "/login", component: LoginView },
-  { path: "/register", component: RegisterView }
+  { path: "/register", component: RegisterView },
+  { path: "/reset-password", component: ResetPassword }
 ];
 
 const router = createRouter({
