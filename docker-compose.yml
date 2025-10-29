@@ -1,4 +1,3 @@
-
 volumes:
   notes-sql-data:
 
@@ -24,9 +23,9 @@ services:
     image: ${DOCKER_USERNAME}/notesapp-api:latest
     container_name: notesapp-api
     ports:
-      - "5247:5247"
+      - "8080:8080"  # Changed from 5247:5247
     environment:
-      - ASPNETCORE_URLS=http://+:5247
+      - ASPNETCORE_URLS=http://+:8080  # Changed port
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Server=notes-sql,1433;Database=NotesDb;User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True
     depends_on:

@@ -11,13 +11,23 @@ builder.Services.AddSingleton<DapperContext>();
 builder.Services.AddScoped<INoteRepository, NoteRepository>();
 
 // Configure CORS (allow frontend on localhost:5173)
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("AllowFrontend", policy =>
+//     {
+//         policy.WithOrigins("http://localhost:5173")
+//               .AllowAnyHeader()
+//               .AllowAnyMethod();
+//     });
+// });
+// Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
@@ -89,7 +99,8 @@ var app = builder.Build();
 // Middleware pipeline
 app.UseHttpsRedirection();
 
-app.UseCors("AllowFrontend");
+// app.UseCors("AllowFrontend");
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
