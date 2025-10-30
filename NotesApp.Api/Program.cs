@@ -10,16 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSingleton<DapperContext>();
 builder.Services.AddScoped<INoteRepository, NoteRepository>();
 
-// Configure CORS (allow frontend on localhost:5173)
-// builder.Services.AddCors(options =>
-// {
-//     options.AddPolicy("AllowFrontend", policy =>
-//     {
-//         policy.WithOrigins("http://localhost:5173")
-//               .AllowAnyHeader()
-//               .AllowAnyMethod();
-//     });
-// });
 // Configure CORS
 builder.Services.AddCors(options =>
 {
@@ -50,19 +40,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Authorization
 builder.Services.AddAuthorization();
-
-// Controllers
 builder.Services.AddControllers();
 
+var app = builder.Build();
 
 // --- Dapper migration: create tables if not exist ---
-using (var scope = builder.Services.BuildServiceProvider().CreateScope())
+// WRAPPED IN TRY-CATCH SO STARTUP DOESN'T FAIL
+try
 {
+    using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<DapperContext>();
     using var conn = context.CreateConnection();
+
+    Console.WriteLine("🔄 Attempting database connection...");
     conn.Open();
+
     var createUsers = @"
         IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Users' and xtype='U')
         CREATE TABLE Users (
@@ -85,25 +78,38 @@ using (var scope = builder.Services.BuildServiceProvider().CreateScope())
             FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
         );
     ";
+
     using var cmd1 = conn.CreateCommand();
     cmd1.CommandText = createUsers;
     cmd1.ExecuteNonQuery();
+
     using var cmd2 = conn.CreateCommand();
     cmd2.CommandText = createNotes;
     cmd2.ExecuteNonQuery();
-    conn.Close();
-}
 
-var app = builder.Build();
+    conn.Close();
+    Console.WriteLine("✅ Database tables created/verified successfully");
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"⚠️ Database migration failed: {ex.Message}");
+    Console.WriteLine("📝 App will still start, but database operations may fail");
+    // Don't crash - let the app start anyway
+}
 
 // Middleware pipeline
 app.UseHttpsRedirection();
-
-// app.UseCors("AllowFrontend");
 app.UseCors("AllowAll");
-
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Add health check endpoints
+app.MapGet("/", () => "API is running");
+app.MapGet("/health", () => Results.Ok(new
+{
+    status = "healthy",
+    timestamp = DateTime.UtcNow
+}));
 
 app.MapControllers();
 

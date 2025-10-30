@@ -7,18 +7,17 @@ namespace NotesApp.Api.Data
     public class DapperContext
     {
         private readonly IConfiguration _configuration;
-        private readonly string _connectionString;
 
         public DapperContext(IConfiguration configuration)
         {
             _configuration = configuration;
-            _connectionString = _configuration
-                .GetConnectionString("DefaultConnection");
         }
 
         public IDbConnection CreateConnection()
         {
-            return new SqlConnection(_connectionString);
+            var connectionString = _configuration.GetConnectionString("DefaultConnection");
+            Console.WriteLine($"📡 Connection String: {connectionString?.Substring(0, 50)}..."); // Debug log
+            return new SqlConnection(connectionString);
         }
     }
 }
