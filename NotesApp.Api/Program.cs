@@ -47,55 +47,55 @@ var app = builder.Build();
 
 // --- Dapper migration: create tables if not exist ---
 // WRAPPED IN TRY-CATCH SO STARTUP DOESN'T FAIL
-try
-{
-    using var scope = app.Services.CreateScope();
-    var context = scope.ServiceProvider.GetRequiredService<DapperContext>();
-    using var conn = context.CreateConnection();
+// try
+// {
+//     using var scope = app.Services.CreateScope();
+//     var context = scope.ServiceProvider.GetRequiredService<DapperContext>();
+//     using var conn = context.CreateConnection();
 
-    Console.WriteLine("🔄 Attempting database connection...");
-    conn.Open();
+//     Console.WriteLine("🔄 Attempting database connection...");
+//     conn.Open();
 
-    var createUsers = @"
-        IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Users' and xtype='U')
-        CREATE TABLE Users (
-            Id INT IDENTITY(1,1) PRIMARY KEY,
-            Username NVARCHAR(100) NOT NULL UNIQUE,
-            Email NVARCHAR(200) NOT NULL UNIQUE,
-            PasswordHash NVARCHAR(200) NOT NULL,
-            CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE()
-        );
-    ";
-    var createNotes = @"
-        IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Notes' and xtype='U')
-        CREATE TABLE Notes (
-            Id INT IDENTITY(1,1) PRIMARY KEY,
-            UserId INT NOT NULL,
-            Title NVARCHAR(200) NOT NULL,
-            Content NVARCHAR(MAX) NULL,
-            CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-            UpdatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-            FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
-        );
-    ";
+//     var createUsers = @"
+//         IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Users' and xtype='U')
+//         CREATE TABLE Users (
+//             Id INT IDENTITY(1,1) PRIMARY KEY,
+//             Username NVARCHAR(100) NOT NULL UNIQUE,
+//             Email NVARCHAR(200) NOT NULL UNIQUE,
+//             PasswordHash NVARCHAR(200) NOT NULL,
+//             CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE()
+//         );
+//     ";
+//     var createNotes = @"
+//         IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Notes' and xtype='U')
+//         CREATE TABLE Notes (
+//             Id INT IDENTITY(1,1) PRIMARY KEY,
+//             UserId INT NOT NULL,
+//             Title NVARCHAR(200) NOT NULL,
+//             Content NVARCHAR(MAX) NULL,
+//             CreatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+//             UpdatedAt DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
+//             FOREIGN KEY (UserId) REFERENCES Users(Id) ON DELETE CASCADE
+//         );
+//     ";
 
-    using var cmd1 = conn.CreateCommand();
-    cmd1.CommandText = createUsers;
-    cmd1.ExecuteNonQuery();
+//     using var cmd1 = conn.CreateCommand();
+//     cmd1.CommandText = createUsers;
+//     cmd1.ExecuteNonQuery();
 
-    using var cmd2 = conn.CreateCommand();
-    cmd2.CommandText = createNotes;
-    cmd2.ExecuteNonQuery();
+//     using var cmd2 = conn.CreateCommand();
+//     cmd2.CommandText = createNotes;
+//     cmd2.ExecuteNonQuery();
 
-    conn.Close();
-    Console.WriteLine("✅ Database tables created/verified successfully");
-}
-catch (Exception ex)
-{
-    Console.WriteLine($"⚠️ Database migration failed: {ex.Message}");
-    Console.WriteLine("📝 App will still start, but database operations may fail");
-    // Don't crash - let the app start anyway
-}
+//     conn.Close();
+//     Console.WriteLine("✅ Database tables created/verified successfully");
+// }
+// catch (Exception ex)
+// {
+//     Console.WriteLine($"⚠️ Database migration failed: {ex.Message}");
+//     Console.WriteLine("📝 App will still start, but database operations may fail");
+//     // Don't crash - let the app start anyway
+// }
 
 // Middleware pipeline
 app.UseHttpsRedirection();
