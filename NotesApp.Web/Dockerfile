@@ -8,6 +8,12 @@ RUN npm install
 
 # Copy the rest of the source
 COPY . .
+
+# Set API URL at build time
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
+# Build the app (Vite will use VITE_API_URL)
 RUN npm run build
 
 # Stage 2: serve with nginx
